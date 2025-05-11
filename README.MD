@@ -93,7 +93,7 @@ Many individuals, especially children and young adults, are interested in learni
 
 ## 💡 Future Enhancements
 - Community forums for discussion and peer support.
-- Mobile-friendly version or companion app.
+- Mobile-friendly version.
 - Advanced analytics to recommend next learning steps more intelligently.
 
 ---
