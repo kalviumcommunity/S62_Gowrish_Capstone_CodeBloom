@@ -59,6 +59,8 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 w-full">
+
+
       {/* Navigation */}
       <nav className="bg-white shadow-sm w-full">
         <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -95,6 +97,9 @@ const LandingPage = () => {
           </div>
         </div>
 
+
+
+
         {/* Mobile menu */}
         {isMenuOpen && (
           <div className="md:hidden w-full">
@@ -109,6 +114,8 @@ const LandingPage = () => {
           </div>
         )}
       </nav>
+
+
 
       {/* Hero Section */}
       <div className="relative bg-white overflow-hidden w-full">
@@ -146,6 +153,8 @@ const LandingPage = () => {
         </div>
       </div>
 
+
+
       {/* Features Section */}
       <div id="features" className="py-12 bg-white w-full">
         <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -182,6 +191,8 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
+
+
 
       {/* Age Groups Section */}
       <div id="age-groups" className="py-12 bg-gray-50 w-full">
@@ -223,6 +234,8 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
+
+
 
       {/* How It Works Section */}
       <div className="py-12 bg-white w-full">
@@ -268,6 +281,8 @@ const LandingPage = () => {
         </div>
       </div>
 
+
+
       {/* Testimonials Section */}
       <div id="testimonials" className="bg-gray-50 py-12 w-full">
         <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -288,6 +303,7 @@ const LandingPage = () => {
           </div>
         </div>
       </div>
+
 
       {/* Footer */}
       <footer className="bg-gray-800 w-full">
@@ -330,5 +346,6 @@ const LandingPage = () => {
     </div>
   );
 }
+
 
 export default LandingPage;
