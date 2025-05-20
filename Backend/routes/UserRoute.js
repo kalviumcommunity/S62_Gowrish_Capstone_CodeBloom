@@ -56,7 +56,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-
 router.put('/:id', async (req, res) => {
   try {
     const { username, email, password } = req.body;
