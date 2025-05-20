@@ -50,9 +50,6 @@ res.status(200).json({ message: 'Login successful', token });
 
 
 router.get('/', authMiddleware, async (req, res) => {
-
-
-
   try {
     const { email } = req.query;
     if (email) {
