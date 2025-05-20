@@ -1,6 +1,10 @@
+require("dotenv").config()
 const express = require('express');
 const bcrypt = require('bcrypt');
+const jwt = require("jsonwebtoken")
 const User = require('../models/UserModel.js');
+const SECRET = process.env.SECRET;
+const authMiddleware = require("../middleware/authMiddleware.js")
 
 const router = express.Router()
 
@@ -25,6 +29,7 @@ router.post('/signup', async (req, res) => {
   }
 });
 
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -35,13 +40,19 @@ router.post('/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials.' });
 
-    res.status(200).json({ message: 'Login successful', user });
+    const token = jwt.sign({ id: user._id, email: user.email }, SECRET, { expiresIn: '1h' });
+res.status(200).json({ message: 'Login successful', token });
+
   } catch (err) {
     res.status(500).json({ message: 'Login failed. Try again.' });
   }
 });
 
-router.get('/', async (req, res) => {
+
+router.get('/', authMiddleware, async (req, res) => {
+
+
+
   try {
     const { email } = req.query;
     if (email) {
