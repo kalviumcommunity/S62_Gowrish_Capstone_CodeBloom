@@ -6,8 +6,7 @@ const User = require('../models/UserModel.js');
 const SECRET = process.env.SECRET;
 const authMiddleware = require("../middleware/authMiddleware.js")
 
-const router = express.Router();
-
+const router = express.Router()
 
 router.post('/signup', async (req, res) => {
   try {
@@ -52,6 +51,8 @@ res.status(200).json({ message: 'Login successful', token });
 
 router.get('/', authMiddleware, async (req, res) => {
 
+
+
   try {
     const { email } = req.query;
     if (email) {
@@ -94,5 +95,6 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Failed to delete user' });
   }
 });
+
 
 module.exports = router;
