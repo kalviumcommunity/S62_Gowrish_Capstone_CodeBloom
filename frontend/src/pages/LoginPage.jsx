@@ -6,12 +6,36 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Add login logic here
-    
-    console.log('Login attempt with:', { email, password });
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('http://localhost:8080/user/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || 'Login failed');
+      } else {
+        // Optionally store token/user info in localStorage
+        localStorage.setItem('user', JSON.stringify(data.user));
+        // Navigate to dashboard or home
+        navigate('/');
+      }
+    } catch (err) {
+      setError('Network error occurred');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,11 +49,17 @@ const LoginPage = () => {
           Back to Home
         </button>
       </div>
-      
+
       <div className="container mx-auto px-6 flex flex-col items-center justify-center min-h-[80vh]">
         <div className="w-full max-w-md">
           <h1 className="text-4xl font-bold text-center mb-8">Welcome Back</h1>
-          
+
+          {error && (
+            <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-2 rounded-lg mb-6">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label htmlFor="email" className="block text-sm font-medium mb-2">
@@ -45,7 +75,7 @@ const LoginPage = () => {
                 required
               />
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-medium mb-2">
                 Password
@@ -60,7 +90,7 @@ const LoginPage = () => {
                 required
               />
             </div>
-            
+
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <input
@@ -72,20 +102,23 @@ const LoginPage = () => {
                   Remember me
                 </label>
               </div>
-              
+
               <button type="button" className="text-sm text-gray-400 hover:text-white">
                 Forgot password?
               </button>
             </div>
-            
+
             <button
               type="submit"
-              className="w-full bg-gray-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
+              disabled={loading}
+              className={`w-full px-8 py-3 rounded-lg font-semibold transition-colors ${
+                loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-500 hover:bg-gray-400'
+              }`}
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
-          
+
           <p className="mt-8 text-center text-sm text-gray-400">
             Don't have an account?{' '}
             <button

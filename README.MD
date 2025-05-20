@@ -100,6 +100,8 @@ Many individuals, especially children and young adults, are interested in learni
 
 
 FrontEnd deplyment link :- https://s62-gowrish-capstone-code-bloom.vercel.app/
+Backend deployment link : - 
 
+Figma low fid design : - https://www.figma.com/design/A58cTwM9PG5Cf1Bwn6ZNys/Capstone-lowfid?node-id=0-1&t=W61AZ7CD7pmpND7k-1
 
 
