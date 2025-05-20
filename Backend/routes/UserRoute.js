@@ -55,8 +55,6 @@ router.get('/', async (req, res) => {
     res.status(500).json({ message: 'Failed to retrieve users' });
   }
 });
-
-
 router.put('/:id', async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -74,8 +72,6 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ message: 'Failed to update user' });
   }
 });
-
-// DELETE
 router.delete('/:id', async (req, res) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.params.id);
@@ -86,6 +82,5 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Failed to delete user' });
   }
 });
-
 
 module.exports = router;
