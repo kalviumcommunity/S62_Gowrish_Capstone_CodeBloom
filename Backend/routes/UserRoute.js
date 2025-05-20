@@ -4,7 +4,6 @@ const User = require('../models/UserModel.js');
 
 const router = express.Router()
 
-
 // POST - Register (Signup)
 router.post('/signup', async (req, res) => {
   try {
