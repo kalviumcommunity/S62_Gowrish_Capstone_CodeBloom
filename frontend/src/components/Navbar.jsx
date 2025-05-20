@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   return (
     <nav className="bg-white shadow-sm w-full">
       <div className="w-full px-4 sm:px-6 lg:px-8">
