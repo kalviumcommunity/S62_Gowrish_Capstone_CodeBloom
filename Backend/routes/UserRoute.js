@@ -2,7 +2,8 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const User = require('../models/UserModel.js');
 
-const router = express.Router();
+const router = express.Router()
+
 
 // POST - Register (Signup)
 router.post('/signup', async (req, res) => {
@@ -43,7 +44,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-//GET - Fetch All or One User (via query param)
 router.get('/', async (req, res) => {
   try {
     const { email } = req.query;
@@ -56,37 +56,6 @@ router.get('/', async (req, res) => {
     res.json(users);
   } catch (err) {
     res.status(500).json({ message: 'Failed to retrieve users' });
-  }
-});
-
-//PUT - Update User by ID
-router.put('/:id', async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-
-    const updates = {};
-    if (username) updates.username = username;
-    if (email) updates.email = email;
-    if (password) updates.password = await bcrypt.hash(password, 10);
-
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, updates, { new: true });
-    if (!updatedUser) return res.status(404).json({ message: 'User not found' });
-
-    res.json({ message: 'User updated', updatedUser });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to update user' });
-  }
-});
-
-// DELETE - Remove User by ID
-router.delete('/:id', async (req, res) => {
-  try {
-    const deletedUser = await User.findByIdAndDelete(req.params.id);
-    if (!deletedUser) return res.status(404).json({ message: 'User not found' });
-
-    res.json({ message: 'User deleted', deletedUser });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to delete user' });
   }
 });
 
