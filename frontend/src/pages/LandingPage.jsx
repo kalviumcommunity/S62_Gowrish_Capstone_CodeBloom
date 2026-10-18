@@ -62,8 +62,6 @@
       <div className="min-h-screen bg-gray-50 w-full">
         <Navbar/>
 
-  // 
-
         {/* Hero Section */}
         <div className="relative bg-white overflow-hidden w-full">
           <div className="w-full">
@@ -85,10 +83,10 @@
                     </p>
                     <div className="mt-8 sm:max-w-lg sm:mx-auto sm:text-center lg:text-left">
                       <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                        <a href="/signup" className="bg-emerald-600 text-white px-6 py-3 rounded-md font-medium hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <a href="/studio" className="bg-emerald-600 text-white px-6 py-3 rounded-md font-medium hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 shadow-sm transition-colors">
                           Get Started
                         </a>
-                        <a href="#age-groups" className="text-emerald-600 bg-emerald-50 px-6 py-3 rounded-md font-medium hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        <a href="#age-groups" className="text-emerald-600 bg-emerald-50 px-6 py-3 rounded-md font-medium hover:bg-emerald-100 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors">
                           Explore Resources
                         </a>
                       </div>
@@ -171,8 +169,8 @@
                     </ul>
                   </div>
                   <div className="mt-6">
-                    <a href="/resources" className="inline-flex items-center text-emerald-600 font-medium hover:text-emerald-700">
-                      View resources
+                    <a href="/studio" className="inline-flex items-center text-emerald-600 font-medium hover:text-emerald-700 transition-colors">
+                      Explore in AI Studio
                       <ChevronRight className="ml-1 h-4 w-4" />
                     </a>
                   </div>

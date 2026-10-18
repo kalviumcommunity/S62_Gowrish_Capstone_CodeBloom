@@ -1,10 +1,10 @@
 require("dotenv").config()
 const express = require('express');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken")
 const User = require('../models/UserModel.js');
 const SECRET = process.env.SECRET;
-const authMiddleware = require("../middleware/authMiddleware.js")
+const authMiddleware = require("../middleware/userMiddleware.js");
 
 const router = express.Router()
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Menu, X, Code2 } from 'lucide-react';
+import { Menu, X, Code2, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
@@ -17,6 +17,10 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-8">
+            <button onClick={() => navigate('/studio')} className="text-emerald-600 hover:text-emerald-700 font-semibold inline-flex items-center gap-1.5 transition-colors">
+              <Sparkles className="w-4 h-4 text-emerald-500" />
+              AI Studio
+            </button>
             <a href="#features" className="text-gray-700 hover:text-emerald-600 font-medium">Features</a>
             <a href="#age-groups" className="text-gray-700 hover:text-emerald-600 font-medium">Age Groups</a>
             <a href="#testimonials" className="text-gray-700 hover:text-emerald-600 font-medium">Testimonials</a>
@@ -37,11 +41,14 @@ const Navbar = () => {
       {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="md:hidden w-full px-2 pt-2 pb-3 space-y-1 sm:px-3">
-          <a href="#features" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-emerald-600">Features</a>
-          <a href="#age-groups" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-emerald-600">Age Groups</a>
-          <a href="#testimonials" className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-emerald-600">Testimonials</a>
-          <button onClick={() => navigate('/login')} className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-emerald-600">Log In</button>
-          <button onClick={() => navigate('/signup')} className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-emerald-600">Sign Up</button>
+          <button onClick={() => { navigate('/studio'); setIsMenuOpen(false); }} className="w-full text-left block px-3 py-2 text-base font-semibold text-emerald-600 hover:bg-emerald-50 rounded-md">
+            AI Studio
+          </button>
+          <a href="#features" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-emerald-600">Features</a>
+          <a href="#age-groups" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-emerald-600">Age Groups</a>
+          <a href="#testimonials" onClick={() => setIsMenuOpen(false)} className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-emerald-600">Testimonials</a>
+          <button onClick={() => { navigate('/login'); setIsMenuOpen(false); }} className="w-full text-left block px-3 py-2 text-base font-medium text-gray-700 hover:text-emerald-600">Log In</button>
+          <button onClick={() => { navigate('/signup'); setIsMenuOpen(false); }} className="w-full text-left block px-3 py-2 text-base font-medium text-gray-700 hover:text-emerald-600">Sign Up</button>
         </div>
       )}
     </nav>
