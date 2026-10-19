@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 const SignupPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -12,6 +14,7 @@ const SignupPage = () => {
   });
 
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,27 +26,35 @@ const SignupPage = () => {
     }
 
     const userData = {
-      username: formData.username,
-      email: formData.email,
+      username: formData.username.trim(),
+      email: formData.email.trim(),
       password: formData.password
     };
 
+    setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/user/signup', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(userData),
-});
+      const response = await fetch(`${API_BASE_URL}/user/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(userData),
+      });
 
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
 
       if (response.ok) {
         navigate('/login');
       } else {
-        const data = await response.json();
-        setError(data.message || 'Signup failed');
+        setError((data && data.message) ? data.message : 'Signup failed. Please try again.');
       }
     } catch (err) {
-      setError('Network error occurred');
+      setError(err?.message || 'Network error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -143,9 +154,12 @@ const SignupPage = () => {
 
             <button
               type="submit"
-              className="w-full bg-gray-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-400 transition-colors"
+              disabled={loading}
+              className={`w-full px-8 py-3 rounded-lg font-semibold transition-colors ${
+                loading ? 'bg-gray-400 cursor-not-allowed text-white' : 'bg-gray-500 hover:bg-gray-400 text-white'
+              }`}
             >
-              Create Account
+              {loading ? 'Creating Account...' : 'Create Account'}
             </button>
           </form>
 

@@ -1,4 +1,5 @@
-require("dotenv").config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -28,7 +29,7 @@ app.get('/', (req, res) => {
 });
 
 if (process.env.MONGO_URI) {
-  mongoose  
+  mongoose
     .connect(process.env.MONGO_URI)
     .then(() => console.log("Successfully connected to the DB"))
     .catch((err) => console.log("Error connecting to the DB:", err.message));

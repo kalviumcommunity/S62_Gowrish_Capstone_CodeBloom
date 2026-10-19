@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Sparkles,
-  BookOpen,
   Play,
   CheckCircle2,
   XCircle,
@@ -15,7 +14,9 @@ import {
   ExternalLink,
   RotateCcw,
   Code2,
-  Search
+  Search,
+  BookOpen,
+  Zap
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -31,6 +32,29 @@ const EXAMPLE_TOPICS = [
   'SQL Database Queries'
 ];
 
+const GUIDE_TABS = [
+  { id: 'detailed', label: 'Detailed Study Guide', badge: 'In-Depth', icon: BookOpen },
+  { id: 'quick', label: 'Quick Reference', badge: 'Revision Cheat Sheet', icon: Zap }
+];
+
+const DOWNLOAD_ACTIONS = [
+  { type: 'quick', label: 'Quick Reference (PDF)', title: 'Download Quick Reference Cheat Sheet PDF', isPrimary: false },
+  { type: 'detailed', label: 'Detailed Study Guide (PDF)', title: 'Download Detailed Study Guide PDF', isPrimary: true }
+];
+
+const FALLBACK_THUMBNAIL = 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&auto=format&fit=crop&q=80';
+
+const getVideoThumbnail = (video) => {
+  if (!video) return null;
+  if (video.url) {
+    const match = video.url.match(/(?:v=|\/embed\/|youtu\.be\/|\/v\/)([a-zA-Z0-9_-]{11})/);
+    if (match && match[1]) {
+      return `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg`;
+    }
+  }
+  return video.thumbnail || null;
+};
+
 const LearningStudio = () => {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState('');
@@ -39,6 +63,8 @@ const LearningStudio = () => {
   const [courseData, setCourseData] = useState(null);
   const [quizAnswers, setQuizAnswers] = useState({});
   const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [activeGuideTab, setActiveGuideTab] = useState('detailed');
+  const [downloadingGuideType, setDownloadingGuideType] = useState(null);
 
   // Helper: Decode and download Base64 PDF
   const downloadBase64Pdf = (base64Data, filename = 'codebloom_study_guide.pdf') => {
@@ -66,38 +92,50 @@ const LearningStudio = () => {
     }
   };
 
-  const handleDownloadPdf = async () => {
-    if (!courseData?.summary?.cheatSheet) return;
+  const handleDownloadPdf = async (type = 'detailed') => {
+    const summary = courseData?.summary;
+    if (!summary) return;
+
+    const isQuick = type === 'quick';
+    const guideText = isQuick
+      ? (summary.quickGuide || summary.cheatSheet)
+      : (summary.studyGuide || summary.cheatSheet);
+
+    if (!guideText) return;
 
     setPdfDownloading(true);
+    setDownloadingGuideType(type);
+
+    const precompiledPdf = isQuick ? summary.quickGuidePdf : (summary.studyGuidePdf || summary.cheatSheetPdf);
+    const defaultFilename = `${(courseData.keyword || 'codebloom').replace(/\s+/g, '_')}_${isQuick ? 'guide' : 'study_guide'}.pdf`;
 
     // 1. Check if server already returned pre-compiled PDF data
-    if (courseData.summary.cheatSheetPdf?.data) {
+    if (precompiledPdf?.data) {
       const success = downloadBase64Pdf(
-        courseData.summary.cheatSheetPdf.data,
-        courseData.summary.cheatSheetPdf.filename || `${courseData.keyword.replace(/\s+/g, '_')}_study_guide.pdf`
+        precompiledPdf.data,
+        precompiledPdf.filename || defaultFilename
       );
       if (success) {
         setPdfDownloading(false);
+        setDownloadingGuideType(null);
         return;
       }
     }
 
     // 2. Fallback: Request PDF generation from the backend
     try {
-      const filename = `${(courseData.keyword || 'codebloom').replace(/\s+/g, '_')}_study_guide.pdf`;
       const response = await fetch(`${API_BASE_URL}/api/generate-pdf`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          text: courseData.summary.cheatSheet,
-          filename
+          text: guideText,
+          filename: defaultFilename
         })
       });
 
       const data = await response.json();
       if (data?.data) {
-        downloadBase64Pdf(data.data, data.filename || filename);
+        downloadBase64Pdf(data.data, data.filename || defaultFilename);
       } else {
         alert('Could not download PDF. Please try again.');
       }
@@ -106,6 +144,7 @@ const LearningStudio = () => {
       alert('Failed to generate PDF. Check backend connection.');
     } finally {
       setPdfDownloading(false);
+      setDownloadingGuideType(null);
     }
   };
 
@@ -119,6 +158,7 @@ const LearningStudio = () => {
     setLoading(true);
     setError(null);
     setQuizAnswers({});
+    setActiveGuideTab('detailed');
 
     try {
       const response = await fetch(`${API_BASE_URL}/api/generate-course`, {
@@ -216,6 +256,16 @@ const LearningStudio = () => {
                   {trimmed.match(/^\d+\./)[0]}
                 </span>
                 <p className="text-gray-700 flex-1">{trimmed.replace(/^\d+\.\s*/, '')}</p>
+              </div>
+            );
+          }
+
+          // Bullet list item
+          if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+            return (
+              <div key={idx} className="flex items-start gap-2 pl-2">
+                <span className="text-emerald-500 font-bold leading-relaxed">•</span>
+                <p className="text-gray-700 flex-1">{trimmed.replace(/^[-•]\s*/, '')}</p>
               </div>
             );
           }
@@ -375,42 +425,58 @@ const LearningStudio = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {courseData.videos.map((video, idx) => (
-                    <div
-                      key={idx}
-                      className="group border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow flex flex-col justify-between bg-white"
-                    >
-                      <div>
-                        {video.thumbnail && (
-                          <div className="relative aspect-video overflow-hidden bg-gray-100">
-                            <img
-                              src={video.thumbnail}
-                              alt={video.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
+                  {courseData.videos.map((video, idx) => {
+                    const thumbUrl = getVideoThumbnail(video);
+
+                    return (
+                      <div
+                        key={idx}
+                        className="group border border-gray-200 rounded-xl overflow-hidden hover:shadow-md transition-shadow flex flex-col justify-between bg-white"
+                      >
+                        <div>
+                          <div className="relative aspect-video overflow-hidden bg-gray-100 flex items-center justify-center">
+                            {thumbUrl ? (
+                              <img
+                                src={thumbUrl}
+                                alt={video.title}
+                                onError={(e) => {
+                                  if (e.target.dataset.fallbackTried) {
+                                    e.target.style.display = 'none';
+                                    return;
+                                  }
+                                  e.target.dataset.fallbackTried = 'true';
+                                  e.target.src = FALLBACK_THUMBNAIL;
+                                }}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                            ) : (
+                              <div className="w-full h-full bg-gradient-to-br from-emerald-900 to-gray-900 flex items-center justify-center">
+                                <Play className="w-10 h-10 text-emerald-400 opacity-80" />
+                              </div>
+                            )}
                           </div>
-                        )}
-                        <div className="p-4">
-                          <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 leading-snug">
-                            {video.title}
-                          </h4>
-                          <p className="text-xs text-gray-500 mt-2 font-medium">{video.channel}</p>
+                          <div className="p-4">
+                            <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 leading-snug">
+                              {video.title}
+                            </h4>
+                            <p className="text-xs text-gray-500 mt-2 font-medium">{video.channel}</p>
+                          </div>
+                        </div>
+
+                        <div className="p-4 pt-0">
+                          <a
+                            href={video.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            Watch Video
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
                         </div>
                       </div>
-
-                      <div className="p-4 pt-0">
-                        <a
-                          href={video.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-lg text-xs font-semibold transition-colors"
-                        >
-                          Watch Video
-                          <ExternalLink className="w-3.5 h-3.5" />
-                        </a>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -524,39 +590,95 @@ const LearningStudio = () => {
             )}
 
             {/* Section 3: Study Notes & Cheat Sheet */}
-            {courseData.summary?.cheatSheet && (
+            {(courseData.summary?.studyGuide || courseData.summary?.cheatSheet || courseData.summary?.quickGuide) && (
               <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-100">
                   <div className="flex items-center gap-2">
                     <FileText className="w-6 h-6 text-emerald-600" />
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900">Study Guide & Summary</h2>
-                      <p className="text-xs text-gray-500">Key concepts, best practices, and reference notes</p>
+                      <h2 className="text-2xl font-bold text-gray-900">Study Guides & Reference Notes</h2>
+                      <p className="text-xs text-gray-500">In-depth concepts, code examples, syntax, and revision cheat sheets</p>
                     </div>
                   </div>
 
-                  {/* PDF Download Button */}
-                  <button
-                    onClick={handleDownloadPdf}
-                    disabled={pdfDownloading}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors shadow-sm text-sm"
-                  >
-                    {pdfDownloading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Generating PDF...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="w-4 h-4" />
-                        Download PDF Guide
-                      </>
-                    )}
-                  </button>
+                  {/* Dual PDF Download Buttons */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    {DOWNLOAD_ACTIONS.map(({ type, label, title, isPrimary }) => (
+                      <button
+                        key={type}
+                        onClick={() => handleDownloadPdf(type)}
+                        disabled={pdfDownloading}
+                        title={title}
+                        className={`inline-flex items-center gap-1.5 px-3.5 py-2 font-medium rounded-lg disabled:opacity-50 transition-colors shadow-sm text-xs sm:text-sm ${
+                          isPrimary
+                            ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
+                        }`}
+                      >
+                        {downloadingGuideType === type ? (
+                          <>
+                            <Loader2 className={`w-4 h-4 animate-spin ${isPrimary ? '' : 'text-emerald-600'}`} />
+                            <span>Generating...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Download className={`w-4 h-4 ${isPrimary ? '' : 'text-emerald-600'}`} />
+                            <span>{label}</span>
+                          </>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                  {renderStudyGuide(courseData.summary.cheatSheet)}
+                {/* Accessible Guide Selector Tabs */}
+                <div
+                  role="tablist"
+                  aria-label="Study Guide View Selector"
+                  className="flex border-b border-gray-200 mb-6 gap-2"
+                >
+                  {GUIDE_TABS.map((tab) => {
+                    const TabIcon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        id={`tab-${tab.id}`}
+                        role="tab"
+                        aria-selected={activeGuideTab === tab.id}
+                        aria-controls={`panel-${tab.id}`}
+                        onClick={() => setActiveGuideTab(tab.id)}
+                        className={`inline-flex items-center gap-2 px-4 py-2.5 font-medium text-sm border-b-2 transition-all -mb-px ${
+                          activeGuideTab === tab.id
+                            ? 'border-emerald-600 text-emerald-700 bg-emerald-50/50 rounded-t-lg font-semibold'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        }`}
+                      >
+                        <TabIcon className="w-4 h-4" />
+                        <span>{tab.label}</span>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full font-normal ${
+                            activeGuideTab === tab.id
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {tab.badge}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Active Guide Panel */}
+                <div
+                  role="tabpanel"
+                  id={activeGuideTab === 'detailed' ? 'panel-detailed' : 'panel-quick'}
+                  aria-labelledby={activeGuideTab === 'detailed' ? 'tab-detailed' : 'tab-quick'}
+                  className="bg-gray-50 border border-gray-200 rounded-xl p-6"
+                >
+                  {activeGuideTab === 'detailed'
+                    ? renderStudyGuide(courseData.summary.studyGuide || courseData.summary.cheatSheet)
+                    : renderStudyGuide(courseData.summary.quickGuide || courseData.summary.cheatSheet)}
                 </div>
               </section>
             )}

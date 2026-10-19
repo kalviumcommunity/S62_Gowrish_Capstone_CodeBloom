@@ -1,8 +1,6 @@
-
-  import { Menu, X, Book, Code, Award, ChevronRight, Layers, Code2, BarChart, Users } from 'lucide-react';
-
-  import Navbar from '../components/Navbar';
-  import Footer from '../components/Footer';
+import { Award, ChevronRight, Layers, BarChart, Users, Code } from 'lucide-react';
+import Navbar from '../components/Navbar';
+import Footer from '../components/Footer';
 
   const LandingPage = () => {
 
