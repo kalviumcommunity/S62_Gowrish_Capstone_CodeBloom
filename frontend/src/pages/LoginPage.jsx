@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 const LoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -15,24 +17,46 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8080/user/login', {
+      const response = await fetch(`${API_BASE_URL}/user/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email: email.trim(), password })
       });
 
-      const data = await response.json();
+      let data = null;
+      try {
+        data = await response.json();
+      } catch {
+        data = null;
+      }
 
       if (!response.ok) {
-        setError(data.message || 'Login failed');
+        setError((data && data.message) ? data.message : 'Login failed. Please check your credentials.');
       } else {
-        // Optionally store token/user info in localStorage
-        localStorage.setItem('user', JSON.stringify(data.user));
+        if (!data || !data.token) {
+          setError('Login succeeded but no authentication token was received.');
+          return;
+        }
+
+        // Store JWT token correctly in localStorage
+        localStorage.setItem('token', data.token);
+
+        // Store only safe user metadata returned by the backend. Never store password data.
+        const safeUser = {
+          id: data.user?.id || data.user?._id || '',
+          username: data.user?.username || email.trim().split('@')[0],
+          email: data.user?.email || email.trim()
+        };
+        localStorage.setItem('user', JSON.stringify(safeUser));
+
+        // Notify Navbar and any other components of auth state change
+        window.dispatchEvent(new Event('authChange'));
+
         // Navigate to dashboard or home
         navigate('/');
       }
     } catch (err) {
-      setError('Network error occurred');
+      setError(err?.message || 'Network error occurred. Please check your connection.');
     } finally {
       setLoading(false);
     }
